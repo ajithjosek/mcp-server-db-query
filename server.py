@@ -2,6 +2,7 @@ from mcp.server import Server, NotificationOptions
 from mcp.server.models import InitializationOptions
 from mcp.types import Resource, Tool, TextContent, ImageContent, EmbeddedResource
 from mcp.shared.exceptions import McpError
+from pydantic import AnyUrl
 import mcp.server.stdio
 import asyncio
 import json
@@ -87,13 +88,13 @@ async def run_server():
     async def list_resources() -> list[Resource]:
         return [
             Resource(
-                uri="billing://dashboard",
+                uri=AnyUrl("billing://dashboard"),
                 name="Billing Dashboard",
                 description="Overview of billing statistics including policies, bills, and financials",
                 mimeType="application/json",
             ),
             Resource(
-                uri="billing://revenue/summary",
+                uri=AnyUrl("billing://revenue/summary"),
                 name="Revenue Summary",
                 description="Revenue summary by period",
                 mimeType="application/json",
@@ -101,8 +102,8 @@ async def run_server():
         ]
 
     @server.read_resource()
-    async def read_resource(uri: str) -> str:
-        if uri == "billing://dashboard":
+    async def read_resource(uri: AnyUrl) -> str:
+        if str(uri) == "billing://dashboard":
             engine = get_engine(DATABASE_PATH)
             session = get_session(engine)
             try:
@@ -111,7 +112,7 @@ async def run_server():
             finally:
                 session.close()
 
-        elif uri == "billing://revenue/summary":
+        elif str(uri) == "billing://revenue/summary":
             engine = get_engine(DATABASE_PATH)
             session = get_session(engine)
             try:
